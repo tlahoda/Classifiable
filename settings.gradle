@@ -1,0 +1,1 @@
+include ':app', ':classifiable_annotation', ':classifiable_processor'
