@@ -2,9 +2,7 @@ package com.appolition.classifiable_processor;
 
 import com.appolition.classifiable_annotation.Classifiable;
 import com.google.auto.service.AutoService;
-import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
@@ -122,36 +120,29 @@ public class ClassifiableProcessor extends AbstractProcessor {
         for (Map.Entry<Pair, List<Element>> entry : elements.entrySet()) {
             Element enclosing = entry.getKey().element.getEnclosingElement();
 
-            String className = String.format("%s%s", enclosing.getSimpleName().toString(), SUFFIX);
+            String enumName = String.format("%s%s", enclosing.getSimpleName().toString(), SUFFIX);
 
-            TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
-                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                    .addMethod(MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).build());
+            TypeSpec.Builder enumBuilder = TypeSpec.enumBuilder(enumName)
+                    .addModifiers(Modifier.PUBLIC);
 
-            int i = 0;
-
-            classBuilder.addField(FieldSpec.builder(int.class, "_all", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                    .initializer("$L", i)
-                    .build());
+            enumBuilder.addEnumConstant("_ALL");
 
             for (Element element : entry.getValue()) {
-                String fieldName = element.getSimpleName().toString().replaceAll("(.)(\\p{Upper})", "$1_$2").toLowerCase().replace("get_", "");
+                String enumConstantName = element.getSimpleName().toString().replaceAll("(.)(\\p{Upper})", "$1_$2").replace("get_", "").toUpperCase();
 
-                classBuilder.addField(FieldSpec.builder(int.class, fieldName, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                        .initializer("$L", ++i)
-                        .build());
+                enumBuilder.addEnumConstant(enumConstantName);
             }
 
             PackageElement packageElement = processingEnvironment.getElementUtils().getPackageOf(enclosing);
             String packageName = packageElement.getQualifiedName().toString();
 
             try {
-                JavaFile.builder(packageName, classBuilder.build())
+                JavaFile.builder(packageName, enumBuilder.build())
                         .indent("    ")
                         .build().writeTo(filer);
 
             } catch (IOException excpt) {
-                messager.printMessage(Diagnostic.Kind.ERROR, String .format("Unable to write %s.%s to a file", packageName, className));
+                messager.printMessage(Diagnostic.Kind.ERROR, String .format("Unable to write %s.%s to a file", packageName, enumName));
                 messager.printMessage(Diagnostic.Kind.ERROR, String.format("\t%s", excpt.getMessage()));
 
                 return false;
@@ -176,8 +167,8 @@ public class ClassifiableProcessor extends AbstractProcessor {
     }
 
     private static final class Pair {
-        Element element;
-        String qualifiedName;
+        final Element element;
+        final String qualifiedName;
 
         public Pair(Element element, String qualifiedName) {
             this.element = element;
