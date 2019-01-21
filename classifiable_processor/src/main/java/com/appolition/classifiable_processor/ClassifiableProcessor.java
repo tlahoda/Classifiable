@@ -123,12 +123,11 @@ public class ClassifiableProcessor extends AbstractProcessor {
             String enumName = String.format("%s%s", enclosing.getSimpleName().toString(), SUFFIX);
 
             TypeSpec.Builder enumBuilder = TypeSpec.enumBuilder(enumName)
-                    .addModifiers(Modifier.PUBLIC);
-
-            enumBuilder.addEnumConstant("_ALL");
+                    .addModifiers(Modifier.PUBLIC)
+                    .addEnumConstant("_ALL");
 
             for (Element element : entry.getValue()) {
-                String enumConstantName = element.getSimpleName().toString().replaceAll("(.)(\\p{Upper})", "$1_$2").replace("get_", "").toUpperCase();
+                String enumConstantName = prepareEnumConstantName(element.getSimpleName().toString());
 
                 enumBuilder.addEnumConstant(enumConstantName);
             }
@@ -150,6 +149,10 @@ public class ClassifiableProcessor extends AbstractProcessor {
         }
 
         return true;
+    }
+
+    private String prepareEnumConstantName(String name) {
+        return name.replaceAll("(.)(\\p{Upper})", "$1_$2").replace("get_", "").toUpperCase();
     }
 
     @Override
