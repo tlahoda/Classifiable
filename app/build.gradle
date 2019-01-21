@@ -41,8 +41,6 @@ dependencies {
     implementation project(':classifiable_annotation')
     annotationProcessor project(':classifiable_processor')
 
-    implementation fileTree(dir: './classifiable_annotation/build/libs/', include: ['*.jar'])
-
     testImplementation 'junit:junit:4.12'
 
     androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
