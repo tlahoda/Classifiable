@@ -103,6 +103,7 @@ public class ClassifiedObservable<EnumType extends Enum<EnumType>> {
     //This is an static class instead of an interface for Parceler
     @Parcel
     public static class OnPropertChangedCallback<EnumType extends Enum<EnumType>> {
+        @SuppressWarnings("EmptyMethod")
         public void notitfyPropertyChanged(EnumType enumType) {
             //noop
         }
