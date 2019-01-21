@@ -26,12 +26,16 @@ task clean(type: Delete) {
     delete rootProject.buildDir
 }
 
-/*
-task createJar(type : Copy){
-    from ('build/intermediates/bundles/release/')
-    into ('libs')
-    include ('classes.jar')
-    rename ('classes.jar','myLib.jar')
+ext {
+    appcompatVersion = "1.1.0-alpha01"
+    supportLibVersion = "28.0.0"
+    constraintLayoutVersion = "2.0.0-alpha3"
+
+    parcelerVersion = "1.1.12"
+
+    junitVersion = "4.12"
+
+    testRunnerVersion = "1.1.1"
+    espressoVersion = "3.1.1"
 }
 
-createJar.dependsOn(deleteJar,build)*/
