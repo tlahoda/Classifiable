@@ -88,7 +88,7 @@ public class ClassifiableProcessor extends AbstractProcessor {
 
                 Collection<? extends Element> annotatedElements = roundEnvironment.getElementsAnnotatedWith(clazz);
 
-                if (!validateUsage(annotatedElements)) {
+                if (!validateUsage(annotatedElements, clazz)) {
                     return false;
                 }
 
@@ -106,10 +106,11 @@ public class ClassifiableProcessor extends AbstractProcessor {
      * Ensures correct usage of the annotation
      *
      * @param annotatedElements, the collection of elements to check
+     * @param clazz, the class of the annootation usage to validate
      *
      * @return boolean, true if all elements in the list are valid
      */
-    private boolean validateUsage(Collection<? extends Element> annotatedElements) {
+    private boolean validateUsage(Collection<? extends Element> annotatedElements, Class<? extends Annotation> clazz) {
         for (Element element : annotatedElements) {
             PackageElement packageElement = processingEnvironment.getElementUtils().getPackageOf(element);
 
@@ -119,19 +120,23 @@ public class ClassifiableProcessor extends AbstractProcessor {
 
             String methodName = element.getSimpleName().toString();
 
-            //TODO: expand error handling output as check for class field or parameter
             if (element.getKind() != ElementKind.METHOD) {
-                messager.printMessage(Diagnostic.Kind.ERROR, String .format("%s.%s: only methods may be annotated with Classifiable", packageName, element.getSimpleName().toString()));
+                messager.printMessage(Diagnostic.Kind.ERROR, String .format("%s.%s: only methods may be annotated with %s", packageName, element.getSimpleName().toString(), clazz.getSimpleName()));
                 return false;
             }
 
             if (!element.getModifiers().contains(Modifier.PUBLIC)){
-                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only public methods may be annotated with Classifiable", packageName, className, methodName));
+                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only public methods may be annotated with %s", packageName, className, methodName, element.getSimpleName().toString(), clazz.getSimpleName()));
                 return false;
             }
 
             if (element.getModifiers().contains(Modifier.ABSTRACT)){
-                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non abstract methods may be annotated with Classifiable", packageName, className, methodName));
+                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non abstract methods may be annotated with %s", packageName, className, methodName, element.getSimpleName().toString(), clazz.getSimpleName()));
+                return false;
+            }
+
+            if (element.getModifiers().contains(Modifier.STATIC)) {
+                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non static methods may be annotated with %s", packageName, className, methodName, element.getSimpleName().toString(), clazz.getSimpleName()));
                 return false;
             }
         }
