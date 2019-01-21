@@ -1,15 +1,14 @@
 package com.appolition.classifiable_processor;
 
-import com.appolition.classifiable_annotation.Classifiable;
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +19,8 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -28,15 +29,38 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
+/**
+ * An annotation processor for generating enums to use as classifiers
+ */
 @AutoService(Processor.class)
+@SupportedAnnotationTypes({"com.appolition.classifiable_annotation.Classifiable"})
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ClassifiableProcessor extends AbstractProcessor {
+    /**
+     * The suffix of the generated enum
+     */
     private static final String SUFFIX = "Classifiers";
 
+    /**
+     * The ProcessingEnvironment, used the get the package name of an element
+     */
     private ProcessingEnvironment processingEnvironment;
 
+    /**
+     * Writes message to the console
+     */
     private Messager messager;
+
+    /**
+     * Writes a file
+     */
     private Filer filer;
 
+    /**
+     * Initializes the processor with the processing environment
+     *
+     * @param processingEnvironment, environment for facilities the tool framework provides to the processor
+     */
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
         super.init(processingEnvironment);
@@ -47,17 +71,44 @@ public class ClassifiableProcessor extends AbstractProcessor {
         filer = processingEnvironment.getFiler();
     }
 
+    /**
+     * Processes a set of annotation types on type elements originating from the prior round
+     *
+     * @param annotations, the annotation types requested to be processed
+     * @param roundEnvironment, environment for information about the current and prior round
+     *
+     * @return boolean, true if the annotation types are claimed and subsequent processors will not be asked to process them,
+     *                  false if the annotation types are unclaimed and subsequent processors may be asked to process them
+     */
     @Override
-    public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
-        Collection<? extends Element> annotatedElements = roundEnvironment.getElementsAnnotatedWith(Classifiable.class);
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnvironment) {
+        for (String className : getSupportedAnnotationTypes()) {
+            try {
+                Class<? extends Annotation> clazz = (Class<? extends Annotation>) Class.forName(className);
 
-        if (!validateUsage(annotatedElements)) {
-            return false;
+                Collection<? extends Element> annotatedElements = roundEnvironment.getElementsAnnotatedWith(clazz);
+
+                if (!validateUsage(annotatedElements)) {
+                    return false;
+                }
+
+                generateCode(divideClasses(annotatedElements));
+
+            } catch (ClassNotFoundException excpt) {
+                messager.printMessage(Diagnostic.Kind.ERROR, excpt.getMessage());
+            }
         }
 
-        return generateCode(divideClasses(annotatedElements));
+        return true;
     }
 
+    /**
+     * Ensures correct usage of the annotation
+     *
+     * @param annotatedElements, the collection of elements to check
+     *
+     * @return boolean, true if all elements in the list are valid
+     */
     private boolean validateUsage(Collection<? extends Element> annotatedElements) {
         for (Element element : annotatedElements) {
             PackageElement packageElement = processingEnvironment.getElementUtils().getPackageOf(element);
@@ -88,6 +139,13 @@ public class ClassifiableProcessor extends AbstractProcessor {
         return true;
     }
 
+    /**
+     * Divides the provided collection of elements by class
+     *
+     * @param annotatedElements, the elements to divide by class
+     *
+     * @return Map<Pair, List<Element>>, the lists of elenets indexed by class
+     */
     private Map<Pair, List<Element>> divideClasses(Collection<? extends Element> annotatedElements) {
         Map<Pair, List<Element>> elements = new HashMap<>();
 
@@ -116,7 +174,12 @@ public class ClassifiableProcessor extends AbstractProcessor {
        return elements;
     }
 
-    private boolean generateCode(Map<Pair, List<Element>> elements) {
+    /**
+     * Generates an enum for the specified elements
+     *
+     * @param elements, the elements for which to generate an enum
+     */
+    private void generateCode(Map<Pair, List<Element>> elements) {
         for (Map.Entry<Pair, List<Element>> entry : elements.entrySet()) {
             Element enclosing = entry.getKey().element.getEnclosingElement();
 
@@ -144,45 +207,64 @@ public class ClassifiableProcessor extends AbstractProcessor {
                 messager.printMessage(Diagnostic.Kind.ERROR, String .format("Unable to write %s.%s to a file", packageName, enumName));
                 messager.printMessage(Diagnostic.Kind.ERROR, String.format("\t%s", excpt.getMessage()));
 
-                return false;
+                return;
             }
         }
-
-        return true;
     }
 
+    /**
+     * Adjust the provided name for use as an enum constant
+     *
+     * @param name, the name to prepare
+     *
+     * @return String, the enum constant name
+     */
     private String prepareEnumConstantName(String name) {
         return name.replaceAll("(.)(\\p{Upper})", "$1_$2").replace("get_", "").toUpperCase();
     }
 
-    @Override
-    public Set<String> getSupportedAnnotationTypes() {
-        Set<String> supportedAnnotations = new HashSet<>();
-
-        supportedAnnotations.add(Classifiable.class.getCanonicalName());
-
-        return supportedAnnotations;
-    }
-
-    @Override
-    public SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.latestSupported();
-    }
-
+    /**
+     * The key type to use for the EnumMap
+     */
     private static final class Pair {
+        /**
+         * The element to process
+         */
         final Element element;
+
+        /**
+         * The fully qualified name of the class containing element
+         */
         final String qualifiedName;
 
+        /**
+         * Constructs a pair
+         *
+         * @param element, the element to process
+         * @param qualifiedName, the fully qualified name of the class containing element
+         */
         public Pair(Element element, String qualifiedName) {
             this.element = element;
             this.qualifiedName = qualifiedName;
         }
 
+        /**
+         * Calculates the hash code
+         *
+         * @return int, the hash code
+         */
         @Override
         public int hashCode() {
             return qualifiedName.hashCode();
         }
 
+        /**
+         * Checks if two pairs are logically equal
+         *
+         * @param obj, the object for which to check equality
+         *
+         * @return boolean, true if the pairs are logically equal, false otherwise
+         */
         @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof Pair)) {
@@ -192,6 +274,11 @@ public class ClassifiableProcessor extends AbstractProcessor {
             return qualifiedName.equals(((Pair) obj).qualifiedName);
         }
 
+        /**
+         * Returns the fully qualified class name as a String
+         *
+         * @return String, the fully qualified class name
+         */
         @Override
         public String toString() {
             return qualifiedName;
