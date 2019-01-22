@@ -188,12 +188,10 @@ public class ClassifiedObservable<ClassifiersType extends Enum<ClassifiersType>>
 
     /**
      * A callback to use for property change notifications
-     *
      */
     public interface OnPropertChangedCallback {
         /**
          * Called when the specified property changes
-         *
          */
         void onPropertyChanged();
     }
