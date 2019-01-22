@@ -2,7 +2,7 @@ package com.appolition.classifiable_processor;
 
 import com.appolition.classifiable_annotation.Classifiable;
 import com.google.auto.service.AutoService;
-import com.squareup.javapoet.JavaFile;
+import com.google.common.annotations.VisibleForTesting;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
@@ -23,7 +23,6 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -55,6 +54,16 @@ public class ClassifiableProcessor extends AbstractProcessor {
      * Writes a file
      */
     private Filer filer;
+
+    private JavaFileWriter javaFileWriter;
+
+    public ClassifiableProcessor() {
+        this.javaFileWriter = new ProcessingEnvironmentJavaFileWriter();
+    }
+
+    public ClassifiableProcessor(JavaFileWriter javaFileWriter) {
+        this.javaFileWriter = javaFileWriter;
+    }
 
     /**
      * Initializes the processor with the processing environment
@@ -189,9 +198,7 @@ public class ClassifiableProcessor extends AbstractProcessor {
             String packageName = packageElement.getQualifiedName().toString();
 
             try {
-                JavaFile.builder(packageName, enumBuilder.build())
-                        .indent("    ")
-                        .build().writeTo(filer);
+                javaFileWriter.writeTo(packageName, enumBuilder, filer);
 
             } catch (IOException excpt) {
                 messager.printMessage(Diagnostic.Kind.ERROR, String .format("Unable to write %s.%s to a file", packageName, enumName));
@@ -216,7 +223,8 @@ public class ClassifiableProcessor extends AbstractProcessor {
     /**
      * The key type to use for the EnumMap
      */
-    private static final class Pair {
+    @VisibleForTesting
+    public static final class Pair {
         /**
          * The element to process
          */
