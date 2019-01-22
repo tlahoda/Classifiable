@@ -14,7 +14,7 @@ import androidx.annotation.VisibleForTesting;
  *
  * @param <ClassifiersType>, the type of classifiers to use for property change notifications
  */
-public abstract class ClassifiedObservable<ClassifiersType extends Enum<ClassifiersType>> {
+public class ClassifiedObservable<ClassifiersType extends Enum<ClassifiersType>> {
     /**
      * The ordinal for notifying all properties changed
      */
@@ -24,7 +24,7 @@ public abstract class ClassifiedObservable<ClassifiersType extends Enum<Classifi
      * The map of classifiers and the callbacks to notify on property changes
      */
     @VisibleForTesting
-    public Map<ClassifiersType, List<OnPropertChangedCallback<ClassifiersType>>> callbacks;
+    public transient Map<ClassifiersType, List<OnPropertChangedCallback>> callbacks;
 
     /**
      * Adds a callback for a particular classifier
@@ -34,14 +34,14 @@ public abstract class ClassifiedObservable<ClassifiersType extends Enum<Classifi
      *
      * @return ClassifiedObservable<ClassifiersType>, a reference to this instance
      */
-    public ClassifiedObservable<ClassifiersType> add(ClassifiersType classifier, OnPropertChangedCallback<ClassifiersType> callback) {
+    public ClassifiedObservable<ClassifiersType> add(ClassifiersType classifier, OnPropertChangedCallback callback) {
         synchronized (this) {
             if (callback != null) {
                 if (callbacks == null) {
                     callbacks = new HashMap<>();
                 }
 
-                List<OnPropertChangedCallback<ClassifiersType>> enumCallbacks = callbacks.get(classifier);
+                List<OnPropertChangedCallback> enumCallbacks = callbacks.get(classifier);
 
                 if (enumCallbacks == null) {
                     enumCallbacks = new ArrayList<>();
@@ -64,14 +64,14 @@ public abstract class ClassifiedObservable<ClassifiersType extends Enum<Classifi
      *
      * @return ClassifiedObservable<ClassifiersType>, a reference to this instance
      */
-    public ClassifiedObservable<ClassifiersType> remove(ClassifiersType classifier, @NonNull OnPropertChangedCallback<ClassifiersType> callback) {
+    public ClassifiedObservable<ClassifiersType> remove(ClassifiersType classifier, @NonNull OnPropertChangedCallback callback) {
         synchronized (this) {
             if (callback != null) {
                 if (callbacks == null) {
                     return this;
                 }
 
-                List<OnPropertChangedCallback<ClassifiersType>> enumCallbacks = callbacks.get(classifier);
+                List<OnPropertChangedCallback> enumCallbacks = callbacks.get(classifier);
 
                 if (enumCallbacks == null) {
                     return this;
@@ -150,19 +150,19 @@ public abstract class ClassifiedObservable<ClassifiersType extends Enum<Classifi
                 if (callbacks.get(classifier) != null) {
                     for (OnPropertChangedCallback callback : callbacks.get(classifier)) {
                         if (callback != null) {
-                            callback.notifyPropertyChanged(classifier);
+                            callback.onPropertyChanged();
                         }
                     }
                 }
 
-                for (Map.Entry<ClassifiersType, List<OnPropertChangedCallback<ClassifiersType>>> entry : callbacks.entrySet()) {
+                for (Map.Entry<ClassifiersType, List<OnPropertChangedCallback>> entry : callbacks.entrySet()) {
                     if ((entry.getValue() == null || entry.getValue().size() == 0) && entry.getKey().ordinal() != _ALL) {
                         continue;
                     }
 
-                    for (OnPropertChangedCallback<ClassifiersType> callback : entry.getValue()) {
+                    for (OnPropertChangedCallback callback : entry.getValue()) {
                         if (callback != null) {
-                            callback.notifyPropertyChanged(entry.getKey());
+                            callback.onPropertyChanged();
                         }
                     }
                 }
@@ -170,15 +170,15 @@ public abstract class ClassifiedObservable<ClassifiersType extends Enum<Classifi
                 return this;
             }
 
-            List<OnPropertChangedCallback<ClassifiersType>> enumCallbacks = callbacks.get(classifier);
+            List<OnPropertChangedCallback> enumCallbacks = callbacks.get(classifier);
 
             if (enumCallbacks == null || enumCallbacks.size() == 0) {
                 return this;
             }
 
-            for (OnPropertChangedCallback<ClassifiersType> callback : enumCallbacks) {
+            for (OnPropertChangedCallback callback : enumCallbacks) {
                 if (callback != null) {
-                    callback.notifyPropertyChanged(classifier);
+                    callback.onPropertyChanged();
                 }
             }
         }
@@ -189,14 +189,12 @@ public abstract class ClassifiedObservable<ClassifiersType extends Enum<Classifi
     /**
      * A callback to use for property change notifications
      *
-     * @param <ClassifiersType>, the type of classifiers to use for property change notifications
      */
-    public interface OnPropertChangedCallback<ClassifiersType extends Enum<ClassifiersType>> {
+    public interface OnPropertChangedCallback {
         /**
          * Called when the specified property changes
          *
-         * @param classifier, the classifier to use for property change notifications
          */
-        void notifyPropertyChanged(ClassifiersType classifier);
+        void onPropertyChanged();
     }
 }
