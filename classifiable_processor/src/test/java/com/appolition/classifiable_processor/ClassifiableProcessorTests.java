@@ -1,5 +1,6 @@
 package com.appolition.classifiable_processor;
 
+import com.appolition.classifiable_processor.writers.IOExceptionThrowingJavaFileWriter;
 import com.google.common.base.Joiner;
 import com.google.common.truth.Truth;
 import com.google.testing.compile.Compilation;

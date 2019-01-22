@@ -1,6 +1,8 @@
 package com.appolition.classifiable_processor;
 
 import com.appolition.classifiable_annotation.Classifiable;
+import com.appolition.classifiable_processor.writers.JavaFileWriter;
+import com.appolition.classifiable_processor.writers.ProcessingEnvironmentJavaFileWriter;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.squareup.javapoet.TypeSpec;
