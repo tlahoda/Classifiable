@@ -31,7 +31,6 @@ public class ClassifiedObservableTests {
         }
     }
 
-    //@Parcel
     private enum FooClassifiers {
         _ALL,
 
@@ -70,8 +69,6 @@ public class ClassifiedObservableTests {
 
         assertEquals("Callback  was not added", 1, callbacks.size());
     }
-
-
 
     @Test
     public void remove_NoCallbackAdded() {
@@ -122,46 +119,6 @@ public class ClassifiedObservableTests {
 
         assertNull("Callback was not removed", foo.callbacks);
     }
-
-//    @Test
-//    public void remove_CallbackAdded_ListNull() {
-//        ClassifiedObservable.OnPropertChangedCallback<FooClassifiers> callback = new ClassifiedObservable.OnPropertChangedCallback<>();
-//
-//        foo.add(FooClassifiers.URL, callback);
-//
-//        assertNotNull("Callback map was not created", foo.callbacks);
-//
-//        assertNotNull("Callback list was not created", foo.callbacks.get(FooClassifiers.URL));
-//
-//        assertEquals("Callback was not add", 1, foo.callbacks.get(FooClassifiers.URL).size());
-//
-//        foo.callbacks.put(FooClassifiers.URL, null);
-//
-//        foo.remove(FooClassifiers.URL, callback);
-//
-//        assertNull("Callback was not removed", foo.callbacks.get(FooClassifiers.URL));
-//    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     @Test
     public void clear_NoCallbackAdded() {
@@ -239,13 +196,9 @@ public class ClassifiedObservableTests {
 
     @Test
     public void notifyPropertChanged_DefaultCallbackAdded_SinglePropertyChanged() throws InterruptedException {
-        //CountDownLatch latch = new CountDownLatch(1);
-
         foo.add(FooClassifiers.URL, new ClassifiedObservable.OnPropertChangedCallback<>());
 
         foo.setUrl("bar");
-
-        //latch.await(5, TimeUnit.MILLISECONDS);
 
         assertFalse("Callback was called", firstCallbackCalled);
     }
