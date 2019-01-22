@@ -36,9 +36,7 @@ public class ClassifiableProcessorTests {
                         "    public String getBaz() {",
                         "        return baz;",
                         "    }",
-                        "}"
-                )
-        );
+                        "}"));
 
         final JavaFileObject output = JavaFileObjects.forSourceString(
                 "com.appolition.FooClassifiers",
@@ -51,9 +49,7 @@ public class ClassifiableProcessorTests {
                         "    BAR,",
                         "",
                         "    BAZ",
-                        "}"
-                )
-        );
+                        "}"));
 
         Truth.assert_()
                 .about(JavaSourcesSubjectFactory.javaSources())
