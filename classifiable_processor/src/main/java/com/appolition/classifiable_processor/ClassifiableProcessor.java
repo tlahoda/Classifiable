@@ -110,23 +110,18 @@ public class ClassifiableProcessor extends AbstractProcessor {
 
             String methodName = element.getSimpleName().toString();
 
-            if (element.getKind() != ElementKind.METHOD) {
-                messager.printMessage(Diagnostic.Kind.ERROR, String .format("%s.%s: only methods may be annotated with Classifiable", packageName, element.getSimpleName().toString()));
-                return false;
-            }
-
             if (!element.getModifiers().contains(Modifier.PUBLIC)){
                 messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only public methods may be annotated with Classifiable", packageName, className, methodName, element.getSimpleName().toString()));
                 return false;
             }
 
             if (element.getModifiers().contains(Modifier.ABSTRACT)){
-                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non abstract methods may be annotated with Classifiable", packageName, className, methodName, element.getSimpleName().toString()));
+                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non-abstract methods may be annotated with Classifiable", packageName, className, methodName, element.getSimpleName().toString()));
                 return false;
             }
 
             if (element.getModifiers().contains(Modifier.STATIC)) {
-                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non static methods may be annotated with Classifiable", packageName, className, methodName, element.getSimpleName().toString()));
+                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non-static methods may be annotated with Classifiable", packageName, className, methodName, element.getSimpleName().toString()));
                 return false;
             }
         }
