@@ -33,8 +33,5 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
 
-    implementation "org.parceler:parceler-api:$parcelerVersion"
-    annotationProcessor "org.parceler:parceler:$parcelerVersion"
-
     testImplementation "junit:junit:$junitVersion"
 }
