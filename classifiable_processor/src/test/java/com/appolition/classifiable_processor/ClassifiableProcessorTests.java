@@ -101,25 +101,10 @@ public class ClassifiableProcessorTests {
                         "    }",
                         "}"));
 
-        final JavaFileObject output = JavaFileObjects.forSourceString(
-                "com.appolition.FooClassifiers",
-                Joiner.on(NEW_LINE).join(
-                        "package com.appolition;",
-                        "",
-                        "public enum FooClassifiers {",
-                        "    _ALL,",
-                        "",
-                        "    BAR,",
-                        "}"));
-
         Truth.assertAbout(JavaSourcesSubjectFactory.javaSources())
                 .that(Arrays.asList(input))
                 .processedWith(new ClassifiableProcessor(new IOExceptionThrowingJavaFileWriter()))
                 .failsToCompile();
-
-                //.compilesWithoutError()
-                //.and()
-                //.generatesSources(output);
     }
 
     @Test
