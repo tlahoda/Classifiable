@@ -15,8 +15,34 @@ import javax.tools.JavaFileObject;
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class ClassifiableProcessorTests {
     private static final String NEW_LINE = "\n";
+
+    @Test
+    public void pairsEqual() {
+        ClassifiableProcessor.Pair pair1 = new ClassifiableProcessor.Pair(null, "foo");
+        ClassifiableProcessor.Pair pair2 = new ClassifiableProcessor.Pair(null, "foo");
+
+        assertTrue("Pairs not equal", pair1.equals(pair2));
+    }
+
+    @Test
+    public void pairsNotEqual() {
+        ClassifiableProcessor.Pair pair1 = new ClassifiableProcessor.Pair(null, "foo");
+        ClassifiableProcessor.Pair pair2 = new ClassifiableProcessor.Pair(null, "bar");
+
+        assertFalse("Pairs equal", pair1.equals(pair2));
+    }
+
+    @Test
+    public void pairAndStringNotEqual() {
+        ClassifiableProcessor.Pair pair1 = new ClassifiableProcessor.Pair(null, "foo");
+
+        assertFalse("Pairs equal", pair1.equals("bar"));
+    }
 
     @Test
     public void methodsAnnotated() {
@@ -35,7 +61,7 @@ public class ClassifiableProcessorTests {
                         "    public String getBar() {",
                         "        return bar;",
                         "    }",
-                       "}"));
+                        "}"));
 
         final JavaFileObject output = JavaFileObjects.forSourceString(
                 "com.appolition.FooClassifiers",
@@ -54,6 +80,46 @@ public class ClassifiableProcessorTests {
                 .compilesWithoutError()
                 .and()
                 .generatesSources(output);
+    }
+
+    @Test
+    public void failingJavaFileWriter() {
+        final JavaFileObject input = JavaFileObjects.forSourceString(
+                "com.appolition.Foo",
+                Joiner.on(NEW_LINE).join(
+                        "package com.appolition;",
+                        "",
+                        "import com.appolition.classifiable_annotation.Classifiable;",
+                        "",
+                        "public class Foo {",
+                        "    private String bar;",
+                        "    private String baz;",
+                        "",
+                        "    @Classifiable",
+                        "    public String getBar() {",
+                        "        return bar;",
+                        "    }",
+                        "}"));
+
+        final JavaFileObject output = JavaFileObjects.forSourceString(
+                "com.appolition.FooClassifiers",
+                Joiner.on(NEW_LINE).join(
+                        "package com.appolition;",
+                        "",
+                        "public enum FooClassifiers {",
+                        "    _ALL,",
+                        "",
+                        "    BAR,",
+                        "}"));
+
+        Truth.assertAbout(JavaSourcesSubjectFactory.javaSources())
+                .that(Arrays.asList(input))
+                .processedWith(new ClassifiableProcessor(new IOExceptionThrowingJavaFileWriter()))
+                .failsToCompile();
+
+                //.compilesWithoutError()
+                //.and()
+                //.generatesSources(output);
     }
 
     @Test
