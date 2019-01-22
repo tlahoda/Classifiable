@@ -10,8 +10,15 @@ dependencies {
 
     implementation project(':classifiable_annotation')
 
-    testCompile 'com.google.truth:truth:0.30'
-    testCompile 'com.google.testing.compile:compile-testing:0.10'
+    testCompile 'com.google.guava:guava:20.0'
+
+    testCompile ('com.google.truth:truth:0.30') {
+        exclude group: 'com.google.guava'
+    }
+
+    testCompile ('com.google.testing.compile:compile-testing:0.10') {
+        exclude group: 'com.google.guava'
+    }
 
     testCompileOnly 'com.google.auto.service:auto-service:1.0-rc2'
     testAnnotationProcessor 'com.google.auto.service:auto-service:1.0-rc2'
