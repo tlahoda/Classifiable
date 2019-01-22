@@ -16,7 +16,8 @@ import javax.tools.JavaFileObject;
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ClassifiableProcessorTests {
@@ -27,7 +28,7 @@ public class ClassifiableProcessorTests {
         ClassifiableProcessor.Pair pair1 = new ClassifiableProcessor.Pair(null, "foo");
         ClassifiableProcessor.Pair pair2 = new ClassifiableProcessor.Pair(null, "foo");
 
-        assertTrue("Pairs not equal", pair1.equals(pair2));
+        assertEquals("Pairs not equal", pair1, pair2);
     }
 
     @Test
@@ -35,14 +36,14 @@ public class ClassifiableProcessorTests {
         ClassifiableProcessor.Pair pair1 = new ClassifiableProcessor.Pair(null, "foo");
         ClassifiableProcessor.Pair pair2 = new ClassifiableProcessor.Pair(null, "bar");
 
-        assertFalse("Pairs equal", pair1.equals(pair2));
+        assertNotEquals("Pairs equal", pair1, pair2);
     }
 
     @Test
     public void pairAndStringNotEqual() {
         ClassifiableProcessor.Pair pair1 = new ClassifiableProcessor.Pair(null, "foo");
 
-        assertFalse("Pairs equal", pair1.equals("bar"));
+        assertNotEquals("Pairs equal", "bar", pair1);
     }
 
     @Test
