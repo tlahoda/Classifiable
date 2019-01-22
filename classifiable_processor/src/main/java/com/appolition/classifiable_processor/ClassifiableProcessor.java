@@ -1,11 +1,11 @@
 package com.appolition.classifiable_processor;
 
+import com.appolition.classifiable_annotation.Classifiable;
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -82,22 +82,13 @@ public class ClassifiableProcessor extends AbstractProcessor {
      */
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnvironment) {
-        for (String className : getSupportedAnnotationTypes()) {
-            try {
-                Class<? extends Annotation> clazz = (Class<? extends Annotation>) Class.forName(className);
+        Collection<? extends Element> annotatedElements = roundEnvironment.getElementsAnnotatedWith(Classifiable.class);
 
-                Collection<? extends Element> annotatedElements = roundEnvironment.getElementsAnnotatedWith(clazz);
-
-                if (!validateUsage(annotatedElements, clazz)) {
-                    return false;
-                }
-
-                generateCode(divideClasses(annotatedElements));
-
-            } catch (ClassNotFoundException excpt) {
-                messager.printMessage(Diagnostic.Kind.ERROR, excpt.getMessage());
-            }
+        if (!validateUsage(annotatedElements)) {
+            return false;
         }
+
+        generateCode(divideClasses(annotatedElements));
 
         return true;
     }
@@ -106,11 +97,10 @@ public class ClassifiableProcessor extends AbstractProcessor {
      * Ensures correct usage of the annotation
      *
      * @param annotatedElements, the collection of elements to check
-     * @param clazz, the class of the annootation usage to validate
      *
      * @return boolean, true if all elements in the list are valid
      */
-    private boolean validateUsage(Collection<? extends Element> annotatedElements, Class<? extends Annotation> clazz) {
+    private boolean validateUsage(Collection<? extends Element> annotatedElements) {
         for (Element element : annotatedElements) {
             PackageElement packageElement = processingEnvironment.getElementUtils().getPackageOf(element);
 
@@ -121,22 +111,22 @@ public class ClassifiableProcessor extends AbstractProcessor {
             String methodName = element.getSimpleName().toString();
 
             if (element.getKind() != ElementKind.METHOD) {
-                messager.printMessage(Diagnostic.Kind.ERROR, String .format("%s.%s: only methods may be annotated with %s", packageName, element.getSimpleName().toString(), clazz.getSimpleName()));
+                messager.printMessage(Diagnostic.Kind.ERROR, String .format("%s.%s: only methods may be annotated with Classifiable", packageName, element.getSimpleName().toString()));
                 return false;
             }
 
             if (!element.getModifiers().contains(Modifier.PUBLIC)){
-                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only public methods may be annotated with %s", packageName, className, methodName, element.getSimpleName().toString(), clazz.getSimpleName()));
+                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only public methods may be annotated with Classifiable", packageName, className, methodName, element.getSimpleName().toString()));
                 return false;
             }
 
             if (element.getModifiers().contains(Modifier.ABSTRACT)){
-                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non abstract methods may be annotated with %s", packageName, className, methodName, element.getSimpleName().toString(), clazz.getSimpleName()));
+                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non abstract methods may be annotated with Classifiable", packageName, className, methodName, element.getSimpleName().toString()));
                 return false;
             }
 
             if (element.getModifiers().contains(Modifier.STATIC)) {
-                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non static methods may be annotated with %s", packageName, className, methodName, element.getSimpleName().toString(), clazz.getSimpleName()));
+                messager.printMessage(Diagnostic.Kind.ERROR,String.format("%s.%s.%s(): only non static methods may be annotated with Classifiable", packageName, className, methodName, element.getSimpleName().toString()));
                 return false;
             }
         }
@@ -272,21 +262,11 @@ public class ClassifiableProcessor extends AbstractProcessor {
          */
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof Pair)) {
+           /* if (!(obj instanceof Pair)) {
                 return false;
-            }
+            }*/
 
-            return qualifiedName.equals(((Pair) obj).qualifiedName);
-        }
-
-        /**
-         * Returns the fully qualified class name as a String
-         *
-         * @return String, the fully qualified class name
-         */
-        @Override
-        public String toString() {
-            return qualifiedName;
+            return (obj instanceof Pair) && qualifiedName.equals(((Pair) obj).qualifiedName);
         }
     }
 }
