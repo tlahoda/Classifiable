@@ -262,10 +262,6 @@ public class ClassifiableProcessor extends AbstractProcessor {
          */
         @Override
         public boolean equals(Object obj) {
-           /* if (!(obj instanceof Pair)) {
-                return false;
-            }*/
-
             return (obj instanceof Pair) && qualifiedName.equals(((Pair) obj).qualifiedName);
         }
     }
