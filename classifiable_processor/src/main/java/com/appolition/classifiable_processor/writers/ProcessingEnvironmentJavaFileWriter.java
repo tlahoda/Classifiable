@@ -1,5 +1,6 @@
-package com.appolition.classifiable_processor;
+package com.appolition.classifiable_processor.writers;
 
+import com.appolition.classifiable_processor.writers.JavaFileWriter;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.TypeSpec;
 

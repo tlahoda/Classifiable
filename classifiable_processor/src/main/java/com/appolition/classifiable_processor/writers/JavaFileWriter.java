@@ -1,4 +1,4 @@
-package com.appolition.classifiable_processor;
+package com.appolition.classifiable_processor.writers;
 
 import com.squareup.javapoet.TypeSpec;
 
