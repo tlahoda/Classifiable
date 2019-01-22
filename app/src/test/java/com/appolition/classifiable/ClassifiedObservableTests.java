@@ -51,19 +51,21 @@ public class ClassifiedObservableTests {
     }
 
     @Test
-    public void add_NullCallbackAdded() throws InterruptedException {
+    public void add_NullCallbackAdded() {
         foo.add(FooClassifiers.URL, null);
 
         assertNull("Callback was added", foo.callbacks);
     }
 
     @Test
-    public void add_CallbackAdded() throws InterruptedException {
-        foo.add(FooClassifiers.URL, new ClassifiedObservable.OnPropertChangedCallback<>());
+    public void add_CallbackAdded() {
+        foo.add(FooClassifiers.URL, classifier -> {
+            //noop
+        });
 
         assertNotNull("Callbacks not null", foo.callbacks);
 
-        assertTrue("Callback was not added", foo.callbacks.size() == 1);
+        assertEquals("Callback was not added", 1, foo.callbacks.size());
 
         List<ClassifiedObservable.OnPropertChangedCallback<FooClassifiers>> callbacks = foo.callbacks.get(FooClassifiers.URL);
 
@@ -72,16 +74,22 @@ public class ClassifiedObservableTests {
 
     @Test
     public void remove_NoCallbackAdded() {
-        foo.remove(FooClassifiers.URL, new ClassifiedObservable.OnPropertChangedCallback<>());
+        foo.remove(FooClassifiers.URL, classifier -> {
+            //noop
+        });
 
         assertNull("Callbacks map was created", foo.callbacks);
     }
 
     @Test
     public void remove_AllCallbackAdded_UrlCallbackRemoved() {
-        ClassifiedObservable.OnPropertChangedCallback<FooClassifiers> callback = new ClassifiedObservable.OnPropertChangedCallback<>();
+        ClassifiedObservable.OnPropertChangedCallback<FooClassifiers> callback = classifier -> {
+            //noop
+        };
 
-        foo.add(FooClassifiers._ALL, new ClassifiedObservable.OnPropertChangedCallback<>());
+        foo.add(FooClassifiers._ALL, classifier -> {
+            //noop
+        });
 
         foo.remove(FooClassifiers.URL, callback);
 
@@ -105,7 +113,9 @@ public class ClassifiedObservableTests {
 
     @Test
     public void remove_CallbackAdded() {
-        ClassifiedObservable.OnPropertChangedCallback<FooClassifiers> callback = new ClassifiedObservable.OnPropertChangedCallback<>();
+        ClassifiedObservable.OnPropertChangedCallback<FooClassifiers> callback = classifier -> {
+            //noop
+        };
 
         foo.add(FooClassifiers.URL, callback);
 
@@ -129,7 +139,9 @@ public class ClassifiedObservableTests {
 
     @Test
     public void clear_CallbackAdded() {
-        foo.add(FooClassifiers.URL, new ClassifiedObservable.OnPropertChangedCallback<>());
+        foo.add(FooClassifiers.URL, classifier -> {
+            //noop
+        });
         foo.clear();
 
         assertNull("Callbacks were not cleared", foo.callbacks);
@@ -144,14 +156,16 @@ public class ClassifiedObservableTests {
 
     @Test
     public void clearClassifier_CallbackAdded() {
-        foo.add(FooClassifiers.URL, new ClassifiedObservable.OnPropertChangedCallback<>());
+        foo.add(FooClassifiers.URL, classifier -> {
+            //noop
+        });
         foo.clear(FooClassifiers.URL);
 
         assertNull("Callbacks were not cleared", foo.callbacks);
     }
 
     @Test
-    public void notifyPropertChanged_NoCallbackAdded() throws InterruptedException {
+    public void notifyPropertChanged_NoCallbackAdded() {
         assertNull("Callbacks not null", foo.callbacks);
 
         foo.notifyPropertyChanged(FooClassifiers.URL);
@@ -178,13 +192,10 @@ public class ClassifiedObservableTests {
     public void notifyPropertChanged_CallbackAdded_SinglePropertyChanged() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        foo.add(FooClassifiers.URL, new ClassifiedObservable.OnPropertChangedCallback<FooClassifiers>() {
-            @Override
-            public void notifyPropertyChanged(FooClassifiers classifier) {
-                firstCallbackCalled = true;
+        foo.add(FooClassifiers.URL, classifier -> {
+            firstCallbackCalled = true;
 
-                latch.countDown();
-            }
+            latch.countDown();
         });
 
         foo.setUrl("bar");
@@ -195,8 +206,10 @@ public class ClassifiedObservableTests {
     }
 
     @Test
-    public void notifyPropertChanged_DefaultCallbackAdded_SinglePropertyChanged() throws InterruptedException {
-        foo.add(FooClassifiers.URL, new ClassifiedObservable.OnPropertChangedCallback<>());
+    public void notifyPropertChanged_DefaultCallbackAdded_SinglePropertyChanged() {
+        foo.add(FooClassifiers.URL, classifier -> {
+            //noop
+        });
 
         foo.setUrl("bar");
 
@@ -207,13 +220,10 @@ public class ClassifiedObservableTests {
     public void notifyPropertChanged_CallbackAdded_SinglePropertiesChanged() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        foo.add(FooClassifiers.URL, new ClassifiedObservable.OnPropertChangedCallback<FooClassifiers>() {
-            @Override
-            public void notifyPropertyChanged(FooClassifiers classifier) {
-                firstCallbackCalled = true;
+        foo.add(FooClassifiers.URL, classifier -> {
+            firstCallbackCalled = true;
 
-                latch.countDown();
-            }
+            latch.countDown();
         });
 
         foo.callbacks.put(FooClassifiers.URL, null);
@@ -226,7 +236,7 @@ public class ClassifiedObservableTests {
     }
 
     @Test
-    public void notifyPropertChanged_NoCallbackAdded_AllPropertiesChanged() throws InterruptedException {
+    public void notifyPropertChanged_NoCallbackAdded_AllPropertiesChanged() {
         assertNull("Callbacks not null", foo.callbacks);
 
         foo.notifyPropertyChanged(FooClassifiers._ALL);
@@ -238,13 +248,10 @@ public class ClassifiedObservableTests {
     public void notifyPropertChanged_CallbackAdded_AllPropertiesChanged() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        foo.add(FooClassifiers.URL, new ClassifiedObservable.OnPropertChangedCallback<FooClassifiers>() {
-            @Override
-            public void notifyPropertyChanged(FooClassifiers classifier) {
-                firstCallbackCalled = true;
+        foo.add(FooClassifiers.URL, classifier -> {
+            firstCallbackCalled = true;
 
-                latch.countDown();
-            }
+            latch.countDown();
         });
 
         foo.notifyPropertyChanged(FooClassifiers._ALL);
@@ -258,13 +265,10 @@ public class ClassifiedObservableTests {
     public void notifyPropertChanged_AllCallbackAdded_AllPropertiesChanged() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
 
-        foo.add(FooClassifiers._ALL, new ClassifiedObservable.OnPropertChangedCallback<FooClassifiers>() {
-            @Override
-            public void notifyPropertyChanged(FooClassifiers classifier) {
-                firstCallbackCalled = true;
+        foo.add(FooClassifiers._ALL, classifier -> {
+            firstCallbackCalled = true;
 
-                latch.countDown();
-            }
+            latch.countDown();
         });
 
         foo.notifyPropertyChanged(FooClassifiers._ALL);
@@ -278,22 +282,16 @@ public class ClassifiedObservableTests {
     public void notifyPropertChanged_AllCallbackAdded_UrlCallbackAdded_AllPropertiesChanged() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(2);
 
-        foo.add(FooClassifiers._ALL, new ClassifiedObservable.OnPropertChangedCallback<FooClassifiers>() {
-            @Override
-            public void notifyPropertyChanged(FooClassifiers classifier) {
-                firstCallbackCalled = true;
+        foo.add(FooClassifiers._ALL, classifier -> {
+            firstCallbackCalled = true;
 
-                latch.countDown();
-            }
+            latch.countDown();
         });
 
-        foo.add(FooClassifiers.URL, new ClassifiedObservable.OnPropertChangedCallback<FooClassifiers>() {
-            @Override
-            public void notifyPropertyChanged(FooClassifiers classifier) {
-                secondCallbackCalled = true;
+        foo.add(FooClassifiers.URL, classifier -> {
+            secondCallbackCalled = true;
 
-                latch.countDown();
-            }
+            latch.countDown();
         });
 
         foo.callbacks.put(FooClassifiers.URL, null);
