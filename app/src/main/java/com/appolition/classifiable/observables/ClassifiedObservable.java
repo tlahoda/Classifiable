@@ -14,7 +14,7 @@ import androidx.annotation.VisibleForTesting;
  *
  * @param <ClassifiersType>, the type of classifiers to use for property change notifications
  */
-public class ClassifiedObservable<ClassifiersType extends Enum<ClassifiersType>> {
+public abstract class ClassifiedObservable<ClassifiersType extends Enum<ClassifiersType>> {
     /**
      * The ordinal for notifying all properties changed
      */
@@ -34,7 +34,7 @@ public class ClassifiedObservable<ClassifiersType extends Enum<ClassifiersType>>
      *
      * @return ClassifiedObservable<ClassifiersType>, a reference to this instance
      */
-    public ClassifiedObservable<ClassifiersType> add(ClassifiersType classifier, @NonNull OnPropertChangedCallback<ClassifiersType> callback) {
+    public ClassifiedObservable<ClassifiersType> add(ClassifiersType classifier, OnPropertChangedCallback<ClassifiersType> callback) {
         synchronized (this) {
             if (callback != null) {
                 if (callbacks == null) {
@@ -188,19 +188,15 @@ public class ClassifiedObservable<ClassifiersType extends Enum<ClassifiersType>>
 
     /**
      * A callback to use for property change notifications
-     * This is an static class instead of an interface for Parceler
      *
      * @param <ClassifiersType>, the type of classifiers to use for property change notifications
      */
-    public static class OnPropertChangedCallback<ClassifiersType extends Enum<ClassifiersType>> {
+    public interface OnPropertChangedCallback<ClassifiersType extends Enum<ClassifiersType>> {
         /**
          * Called when the specified property changes
          *
          * @param classifier, the classifier to use for property change notifications
          */
-        @SuppressWarnings("EmptyMethod")
-        public void notifyPropertyChanged(ClassifiersType classifier) {
-            //noop
-        }
+        void notifyPropertyChanged(ClassifiersType classifier);
     }
 }
